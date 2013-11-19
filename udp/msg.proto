@@ -1,0 +1,8 @@
+package msg;
+
+message Msg {
+	required int32 header=1;
+	required int32 id=2;
+	required string message=3;
+	optional string reserved=4;
+}
