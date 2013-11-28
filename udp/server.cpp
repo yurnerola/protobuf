@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include "msg.pb.h"
+#include "ASS.hxx.pb.h"
 #include <iostream>
 
 #define MAXLINE 1024
-#define SERV_PORT 8899
+#define SERV_PORT 4789
 using namespace std;
 int main()
 {
@@ -31,15 +31,28 @@ int main()
 	
 	for(;;)
 	{
+		memset(msg, 0, sizeof(msg));
 		len=sizeof(clientaddr);
 		n=recvfrom(socketfd,msg,MAXLINE,0,(struct sockaddr *)&clientaddr,&len);
+		//cout<<msg<<endl;
 		string str(msg,msg+n);
-		msg::Msg msg_decoding;
+		//printf("msg: %s, str: %s, n: %d\n", msg, str.c_str(), n);
+		//string str(msg);
+		cout<<str<<endl;
+		PBRequest msg_decoding;
 		msg_decoding.ParseFromString(str);
 		cout<<"msg header:"<<msg_decoding.header()<<endl;
 		cout<<"msg id:"<<msg_decoding.id()<<endl;
 		cout<<"msg message:"<<msg_decoding.message()<<endl;
-		cout<<"msg reserved:"<<msg_decoding.reserved()<<endl;
+		
+	  	PBResponse response;
+		response.set_header(0x02);
+		response.set_id(msg_decoding.id());
+		response.set_result(true);
+		
+		string str_msg;
+		response.SerializeToString(&str_msg);
+		sendto(socketfd,str_msg.c_str(),str_msg.size(),0,(struct sockaddr *)&clientaddr,len);
 	}
 	return 0;
 }
